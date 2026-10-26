@@ -761,6 +761,115 @@ textarea {
   color: var(--danger);
 }
 
+/* Magazyny */
+
+.magazine-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.magazine-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--cat);
+  border-radius: var(--radius);
+}
+
+[data-category='unpublished'] {
+  --cat: var(--makeup);
+}
+[data-category='published'] {
+  --cat: var(--stylist);
+}
+[data-category='both'] {
+  --cat: var(--planned);
+}
+
+.magazine-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.magazine-head strong {
+  font-size: 1.05rem;
+}
+
+.category-badge {
+  color: var(--cat);
+  background: color-mix(in srgb, var(--cat) 14%, var(--surface));
+}
+
+.magazine-notes {
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.magazine-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.submissions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.submission {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--sub);
+  border-radius: 8px;
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.submission .muted {
+  font-size: 0.8rem;
+}
+
+[data-sub='sent'] {
+  --sub: var(--planned);
+}
+[data-sub='accepted'] {
+  --sub: var(--confirmed);
+}
+[data-sub='rejected'] {
+  --sub: var(--danger);
+}
+[data-sub='published'] {
+  --sub: var(--ig);
+}
+
+.sub-status {
+  font-weight: 700;
+  color: var(--sub);
+}
+
+.waiting {
+  margin-bottom: 8px;
+}
+
 /* Planer postów */
 
 .field {
@@ -945,17 +1054,34 @@ textarea {
     margin-left: 0;
   }
 
+  /* Wąski ekran: logo i konto w pierwszym rzędzie, zakładki w drugim. */
   .topbar {
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    padding-bottom: 4px;
+  }
+
+  .topbar .brand {
+    display: block;
+    flex: 1;
   }
 
   .topbar nav {
+    order: 2;
+    flex-basis: 100%;
+    justify-content: space-between;
     gap: 0;
     overflow-x: auto;
   }
 
   .topbar nav a {
-    padding: 0 10px;
+    min-height: 40px;
+    padding: 0 8px;
+    font-size: 0.9rem;
+  }
+
+  .magazine-grid {
+    grid-template-columns: 1fr;
   }
 
   .post-card-main {

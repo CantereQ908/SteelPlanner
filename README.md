@@ -34,6 +34,7 @@ Jeśli baza powstała przed którąś z późniejszych zmian, uruchom w SQL Edit
 - [supabase/migrations-2026-10-03-person-note.sql](supabase/migrations-2026-10-03-person-note.sql) — notatki przy osobach
 - [supabase/migrations-2026-10-06-posts.sql](supabase/migrations-2026-10-06-posts.sql) — planer postów na Instagram
 - [supabase/migrations-2026-10-06-task-due.sql](supabase/migrations-2026-10-06-task-due.sql) — terminy zadań
+- [supabase/migrations-2026-10-26-magazines.sql](supabase/migrations-2026-10-26-magazines.sql) — magazyny i zgłoszenia sesji
 
 Dane z trybu lokalnego nie przenoszą się automatycznie do chmury.
 

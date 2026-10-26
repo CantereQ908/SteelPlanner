@@ -58,12 +58,37 @@ create table public.posts (
   created_at timestamptz not null default now()
 );
 
+create table public.magazines (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  name text not null,
+  category text not null default 'unpublished' check (category in ('unpublished', 'published', 'both')),
+  url text not null default '',
+  email text not null default '',
+  instagram text not null default '',
+  notes text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create table public.submissions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  magazine_id uuid not null references public.magazines (id) on delete cascade,
+  session_id uuid not null references public.sessions (id) on delete cascade,
+  status text not null default 'sent' check (status in ('sent', 'accepted', 'rejected', 'published')),
+  sent_date date not null default current_date,
+  notes text not null default '',
+  created_at timestamptz not null default now()
+);
+
 -- Każdy zalogowany użytkownik widzi i zmienia wyłącznie swoje wiersze.
 alter table public.people enable row level security;
 alter table public.sessions enable row level security;
 alter table public.session_people enable row level security;
 alter table public.tasks enable row level security;
 alter table public.posts enable row level security;
+alter table public.magazines enable row level security;
+alter table public.submissions enable row level security;
 
 create policy "own people" on public.people for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
@@ -76,6 +101,10 @@ create policy "own tasks" on public.tasks for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own posts" on public.posts for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy "own magazines" on public.magazines for all to authenticated
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy "own submissions" on public.submissions for all to authenticated
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- Zmiany na żywo między urządzeniami.
-alter publication supabase_realtime add table public.people, public.sessions, public.session_people, public.tasks, public.posts;
+alter publication supabase_realtime add table public.people, public.sessions, public.session_people, public.tasks, public.posts, public.magazines, public.submissions;

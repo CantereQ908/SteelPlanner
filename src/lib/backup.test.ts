@@ -14,6 +14,10 @@ const data: Data = {
   posts: [
     { id: 'p', sessionId: 's', date: '2026-10-20', time: '18:00', format: 'carousel', status: 'ready', caption: 'Opis', hashtags: '#x', personIds: ['a'], notes: '' },
   ],
+  magazines: [
+    { id: 'm', name: 'Kaltblut', category: 'both', url: 'https://example.com/submit', email: '', instagram: 'kaltblut', notes: 'Min. 8 zdjęć' },
+  ],
+  submissions: [{ id: 'x', magazineId: 'm', sessionId: 's', status: 'sent', sentDate: '2026-10-26', notes: '' }],
 }
 
 describe('backup', () => {
@@ -44,6 +48,11 @@ describe('backup', () => {
         ],
         tasks: [{ id: 't', sessionId: 'gone', parentId: 'gone', title: 'T' }],
         posts: [{ id: 'p', sessionId: 'bad', personIds: ['a', 'gone'] }],
+        magazines: [{ id: 'm', name: 'M', category: '???' }],
+        submissions: [
+          { id: 'ok', magazineId: 'm', sessionId: 's', sentDate: '2026-10-01' },
+          { id: 'lost', magazineId: 'm', sessionId: 'bad' },
+        ],
       },
     })
     const result = parseBackup(old)
@@ -53,11 +62,13 @@ describe('backup', () => {
     expect(result.sessions[0].endTime).toBe('')
     expect(result.tasks[0]).toMatchObject({ sessionId: null, parentId: null, dueDate: '', done: false })
     expect(result.posts[0]).toMatchObject({ sessionId: null, personIds: ['a'], format: 'post', status: 'idea' })
+    expect(result.magazines[0]).toMatchObject({ category: 'unpublished', url: '', notes: '' })
+    expect(result.submissions).toEqual([{ id: 'ok', magazineId: 'm', sessionId: 's', status: 'sent', sentDate: '2026-10-01', notes: '' }])
   })
 
   it('summarizes counts with Polish plurals', () => {
-    expect(summarize(data)).toBe('1 sesja · 1 osoba · 2 zadania · 1 post')
-    const many = { ...data, people: Array(12).fill(data.people[0]), posts: Array(22).fill(data.posts[0]) }
-    expect(summarize(many)).toBe('1 sesja · 12 osób · 2 zadania · 22 posty')
+    expect(summarize(data)).toBe('1 sesja · 1 osoba · 2 zadania · 1 post · 1 magazyn · 1 zgłoszenie')
+    const many = { ...data, people: Array(12).fill(data.people[0]), posts: Array(22).fill(data.posts[0]), magazines: [] }
+    expect(summarize(many)).toBe('1 sesja · 12 osób · 2 zadania · 22 posty · 0 magazynów · 1 zgłoszenie')
   })
 })

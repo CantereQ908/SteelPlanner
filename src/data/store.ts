@@ -1,4 +1,4 @@
-import type { Data, Person, Post, Session, Task } from '../types'
+import type { Data, Magazine, Person, Post, Session, Submission, Task } from '../types'
 
 export type SessionFields = Omit<Session, 'personIds'>
 
@@ -19,11 +19,16 @@ export interface DataStore {
   deleteTask(id: string): Promise<void>
   savePost(post: Post): Promise<void>
   deletePost(id: string): Promise<void>
+  saveMagazine(magazine: Magazine): Promise<void>
+  /** Usuwa też zgłoszenia do tego magazynu. */
+  deleteMagazine(id: string): Promise<void>
+  saveSubmission(submission: Submission): Promise<void>
+  deleteSubmission(id: string): Promise<void>
   /** Dopisuje dane z kopii: dodaje brakujące, nadpisuje te o tym samym id, niczego nie usuwa. */
   importData(data: Data): Promise<void>
 }
 
-export const EMPTY: Data = { people: [], sessions: [], tasks: [], posts: [] }
+export const EMPTY: Data = { people: [], sessions: [], tasks: [], posts: [], magazines: [], submissions: [] }
 
 /** Dane zapisane starszą wersją aplikacji mogą nie mieć nowszych pól. */
 export function normalize(data: Partial<Data>): Data {
@@ -66,6 +71,7 @@ export function withoutSession(data: Data, id: string): Data {
     tasks: data.tasks.filter((t) => t.sessionId !== id),
     // Posty zostają, tracą tylko powiązanie (jak on delete set null w bazie).
     posts: data.posts.map((p) => (p.sessionId === id ? { ...p, sessionId: null } : p)),
+    submissions: data.submissions.filter((s) => s.sessionId !== id),
   }
 }
 
@@ -93,6 +99,36 @@ export function withoutPost(data: Data, id: string): Data {
   return { ...data, posts: data.posts.filter((p) => p.id !== id) }
 }
 
+export function withMagazine(data: Data, magazine: Magazine): Data {
+  const exists = data.magazines.some((m) => m.id === magazine.id)
+  return {
+    ...data,
+    magazines: exists ? data.magazines.map((m) => (m.id === magazine.id ? magazine : m)) : [...data.magazines, magazine],
+  }
+}
+
+export function withoutMagazine(data: Data, id: string): Data {
+  return {
+    ...data,
+    magazines: data.magazines.filter((m) => m.id !== id),
+    submissions: data.submissions.filter((s) => s.magazineId !== id),
+  }
+}
+
+export function withSubmission(data: Data, submission: Submission): Data {
+  const exists = data.submissions.some((s) => s.id === submission.id)
+  return {
+    ...data,
+    submissions: exists
+      ? data.submissions.map((s) => (s.id === submission.id ? submission : s))
+      : [...data.submissions, submission],
+  }
+}
+
+export function withoutSubmission(data: Data, id: string): Data {
+  return { ...data, submissions: data.submissions.filter((s) => s.id !== id) }
+}
+
 export function mergeData(data: Data, incoming: Data): Data {
   let result = data
   for (const p of incoming.people) result = withPerson(result, p)
@@ -103,6 +139,8 @@ export function mergeData(data: Data, incoming: Data): Data {
   }
   for (const t of incoming.tasks) result = withTask(result, t)
   for (const p of incoming.posts) result = withPost(result, p)
+  for (const m of incoming.magazines) result = withMagazine(result, m)
+  for (const s of incoming.submissions) result = withSubmission(result, s)
   return result
 }
 

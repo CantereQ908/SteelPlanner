@@ -13,6 +13,12 @@ export function instagramUrl(raw: string): string {
   return `https://instagram.com/${encodeURIComponent(instagramHandle(raw))}`
 }
 
+/** Link zewnętrzny; dopisuje https://, gdy wklejono sam adres bez protokołu. */
+export function externalUrl(raw: string): string {
+  const url = raw.trim()
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
 /** mailto: do wszystkich podanych adresów; null, gdy nie ma żadnego. */
 export function mailtoAll(emails: string[], subject: string): string | null {
   const unique = [...new Set(emails.map((e) => e.trim()).filter(Boolean))]

@@ -7,6 +7,7 @@ import { clearCache, createSupabaseStore, supabase } from './data/supabaseStore'
 import { BackupView, lastBackupLabel } from './views/BackupView'
 import { CalendarView } from './views/CalendarView'
 import { LoginView } from './views/LoginView'
+import { MagazinesView } from './views/MagazinesView'
 import { PeopleView } from './views/PeopleView'
 import { PostsView } from './views/PostsView'
 import { SessionDetailView } from './views/SessionDetailView'
@@ -37,6 +38,7 @@ function Shell({ account, onSignOut }: { account?: string; onSignOut?(): void })
           <NavLink to="/kalendarz">Kalendarz</NavLink>
           <NavLink to="/ludzie">Ludzie</NavLink>
           <NavLink to="/posty">Posty</NavLink>
+          <NavLink to="/magazyny">Magazyny</NavLink>
         </nav>
         <div className="account">
           {account ? (
@@ -70,6 +72,7 @@ function Shell({ account, onSignOut }: { account?: string; onSignOut?(): void })
             <Route path="/kalendarz" element={<CalendarView />} />
             <Route path="/ludzie" element={<PeopleView />} />
             <Route path="/posty/:postId?" element={<PostsView />} />
+            <Route path="/magazyny" element={<MagazinesView />} />
             <Route path="/kopia" element={<BackupView />} />
           </Routes>
         )}

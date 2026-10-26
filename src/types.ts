@@ -63,11 +63,40 @@ export interface Post {
   notes: string
 }
 
+export type MagazineCategory = 'unpublished' | 'published' | 'both'
+export type SubmissionStatus = 'sent' | 'accepted' | 'rejected' | 'published'
+
+export interface Magazine {
+  id: string
+  name: string
+  /** Jakie sesje przyjmuje: niepublikowane, publikowane czy oba rodzaje */
+  category: MagazineCategory
+  /** Link do formularza / strony ze zgłoszeniami */
+  url: string
+  email: string
+  instagram: string
+  /** Wymagania, np. liczba zdjęć, format, ekskluzywność */
+  notes: string
+}
+
+/** Zgłoszenie konkretnej sesji do konkretnego magazynu. */
+export interface Submission {
+  id: string
+  magazineId: string
+  sessionId: string
+  status: SubmissionStatus
+  /** YYYY-MM-DD */
+  sentDate: string
+  notes: string
+}
+
 export interface Data {
   people: Person[]
   sessions: Session[]
   tasks: Task[]
   posts: Post[]
+  magazines: Magazine[]
+  submissions: Submission[]
 }
 
 export const ROLES: Role[] = ['model', 'stylist', 'makeup']
@@ -99,6 +128,23 @@ export const POST_STATUS_LABEL: Record<PostStatus, string> = {
   idea: 'Pomysł',
   ready: 'Gotowy',
   published: 'Opublikowany',
+}
+
+export const MAGAZINE_CATEGORIES: MagazineCategory[] = ['unpublished', 'published', 'both']
+
+export const MAGAZINE_CATEGORY_LABEL: Record<MagazineCategory, string> = {
+  unpublished: 'Niepublikowane',
+  published: 'Publikowane',
+  both: 'Oba rodzaje',
+}
+
+export const SUBMISSION_STATUSES: SubmissionStatus[] = ['sent', 'accepted', 'rejected', 'published']
+
+export const SUBMISSION_STATUS_LABEL: Record<SubmissionStatus, string> = {
+  sent: 'Wysłana',
+  accepted: 'Przyjęta',
+  rejected: 'Odrzucona',
+  published: 'Opublikowana',
 }
 
 export const STATUSES: Status[] = ['planned', 'confirmed', 'done']

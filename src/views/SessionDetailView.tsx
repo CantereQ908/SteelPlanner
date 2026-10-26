@@ -16,11 +16,13 @@ import { PostCard } from '../components/PostCard'
 import { PostForm } from '../components/PostForm'
 import { RoleFilter, type RoleChoice } from '../components/RoleFilter'
 import { SessionForm } from '../components/SessionForm'
+import { SubmissionForm } from '../components/SubmissionForm'
+import { SubmissionList } from '../components/SubmissionList'
 import { TodoPanel } from '../components/TodoPanel'
 import { useData } from '../data/DataProvider'
 import { mailtoAll, matchesPerson } from '../lib/contact'
 import { formatLong, formatTimeRange } from '../lib/dates'
-import { ROLES, ROLE_LABEL_PLURAL, STATUS_LABEL, type Person, type Post } from '../types'
+import { ROLES, ROLE_LABEL_PLURAL, STATUS_LABEL, type Person, type Post, type Submission } from '../types'
 
 const PINNED = 'pinned'
 const AVAILABLE = 'available'
@@ -54,6 +56,8 @@ export function SessionDetailView() {
   const [draggedId, setDraggedId] = useState<string | null>(null)
   // 'new' = nowy post z tej sesji, Post = edycja
   const [postForm, setPostForm] = useState<Post | 'new' | null>(null)
+  // 'new' = nowe zgłoszenie tej sesji, Submission = edycja
+  const [submissionForm, setSubmissionForm] = useState<Submission | 'new' | null>(null)
 
   // Mysz: przeciągnięcie po 8 px, żeby kliknięcia w linki działały.
   // Dotyk: przytrzymanie, żeby zwykłe przewijanie listy nie porywało kafelków.
@@ -200,6 +204,29 @@ export function SessionDetailView() {
           </div>
         )}
       </section>
+
+      <section>
+        <div className="view-head">
+          <h2>Zgłoszenia do magazynów</h2>
+          <button className="btn" onClick={() => setSubmissionForm('new')}>
+            Zgłoś do magazynu
+          </button>
+        </div>
+        <SubmissionList
+          submissions={data.submissions.filter((s) => s.sessionId === session.id)}
+          show="magazine"
+          empty="Ta sesja nie była jeszcze nigdzie wysyłana."
+          onOpen={setSubmissionForm}
+        />
+      </section>
+
+      {submissionForm && (
+        <SubmissionForm
+          initial={submissionForm === 'new' ? undefined : submissionForm}
+          defaults={{ sessionId: session.id }}
+          onClose={() => setSubmissionForm(null)}
+        />
+      )}
 
       {postForm && (
         <PostForm

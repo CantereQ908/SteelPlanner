@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { instagramHandle, instagramUrl, mailtoAll, matchesPerson } from './contact'
+import { externalUrl, instagramHandle, instagramUrl, mailtoAll, matchesPerson } from './contact'
 import type { Person } from '../types'
 
 describe('contact', () => {
@@ -8,6 +8,12 @@ describe('contact', () => {
     expect(instagramHandle(' ania.foto ')).toBe('ania.foto')
     expect(instagramHandle('https://www.instagram.com/ania.foto/?hl=pl')).toBe('ania.foto')
     expect(instagramUrl('@ania.foto')).toBe('https://instagram.com/ania.foto')
+  })
+
+  it('adds https to bare external links', () => {
+    expect(externalUrl('magazyn.com/submit')).toBe('https://magazyn.com/submit')
+    expect(externalUrl(' http://a.pl ')).toBe('http://a.pl')
+    expect(externalUrl('HTTPS://A.PL')).toBe('HTTPS://A.PL')
   })
 
   it('builds a mailto for all unique addresses', () => {

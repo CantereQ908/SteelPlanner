@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import type { Data, Person, Post, Session, Task } from '../types'
+import type { Data, Magazine, Person, Post, Session, Submission, Task } from '../types'
 import { normalize, type DataStore, type SessionFields } from './store'
 
 const url = import.meta.env.VITE_SUPABASE_URL
@@ -62,12 +62,21 @@ const postRow = (p: Post) => ({
   notes: p.notes,
 })
 
+const submissionRow = (s: Submission) => ({
+  id: s.id,
+  magazine_id: s.magazineId,
+  session_id: s.sessionId,
+  status: s.status,
+  sent_date: s.sentDate,
+  notes: s.notes,
+})
+
 export function createSupabaseStore(db: SupabaseClient): DataStore {
   return {
     needsNetwork: true,
 
     async load() {
-      const [people, sessions, links, tasks, posts] = await Promise.all([
+      const [people, sessions, links, tasks, posts, magazines, submissions] = await Promise.all([
         db.from('people').select('id, name, email, instagram, role, note'),
         db.from('sessions').select('id, title, session_date, start_time, end_time, location, description, status'),
         db.from('session_people').select('session_id, person_id'),
@@ -75,8 +84,11 @@ export function createSupabaseStore(db: SupabaseClient): DataStore {
         db
           .from('posts')
           .select('id, session_id, publish_date, publish_time, format, status, caption, hashtags, person_ids, notes'),
+        db.from('magazines').select('id, name, category, url, email, instagram, notes'),
+        db.from('submissions').select('id, magazine_id, session_id, status, sent_date, notes'),
       ])
-      const error = people.error ?? sessions.error ?? links.error ?? tasks.error ?? posts.error
+      const error =
+        people.error ?? sessions.error ?? links.error ?? tasks.error ?? posts.error ?? magazines.error ?? submissions.error
       if (error) {
         // Offline albo chwilowy błąd: pokaż ostatnio pobrane dane.
         const cached = readCache()
@@ -121,6 +133,17 @@ export function createSupabaseStore(db: SupabaseClient): DataStore {
             caption: row.caption,
             hashtags: row.hashtags,
             personIds: row.person_ids,
+            notes: row.notes,
+          }),
+        ),
+        magazines: magazines.data as Magazine[],
+        submissions: submissions.data!.map(
+          (row): Submission => ({
+            id: row.id,
+            magazineId: row.magazine_id,
+            sessionId: row.session_id,
+            status: row.status,
+            sentDate: row.sent_date,
             notes: row.notes,
           }),
         ),
@@ -174,6 +197,19 @@ export function createSupabaseStore(db: SupabaseClient): DataStore {
     async deletePost(id) {
       check(await db.from('posts').delete().eq('id', id))
     },
+    async saveMagazine(m) {
+      check(await db.from('magazines').upsert(m))
+    },
+    async deleteMagazine(id) {
+      // Zgłoszenia usuwa baza (on delete cascade).
+      check(await db.from('magazines').delete().eq('id', id))
+    },
+    async saveSubmission(s) {
+      check(await db.from('submissions').upsert(submissionRow(s)))
+    },
+    async deleteSubmission(id) {
+      check(await db.from('submissions').delete().eq('id', id))
+    },
     async importData(d) {
       // Kolejność ma znaczenie: najpierw to, do czego inne wiersze się odwołują.
       if (d.people.length) check(await db.from('people').upsert(d.people))
@@ -185,6 +221,8 @@ export function createSupabaseStore(db: SupabaseClient): DataStore {
       if (roots.length) check(await db.from('tasks').upsert(roots.map(taskRow)))
       if (subtasks.length) check(await db.from('tasks').upsert(subtasks.map(taskRow)))
       if (d.posts.length) check(await db.from('posts').upsert(d.posts.map(postRow)))
+      if (d.magazines.length) check(await db.from('magazines').upsert(d.magazines))
+      if (d.submissions.length) check(await db.from('submissions').upsert(d.submissions.map(submissionRow)))
     },
   }
 }

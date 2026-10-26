@@ -1,16 +1,20 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { Data, Person, Post, Task } from '../types'
+import type { Data, Magazine, Person, Post, Submission, Task } from '../types'
 import {
   EMPTY,
+  withMagazine,
   withPerson,
   withPin,
   withSession,
   withPost,
+  withSubmission,
   withTask,
+  withoutMagazine,
   withoutPerson,
   withoutPin,
   withoutSession,
   withoutPost,
+  withoutSubmission,
   withoutTask,
   type DataStore,
   type SessionFields,
@@ -34,6 +38,10 @@ interface DataContext {
   deleteTask(id: string): Promise<void>
   savePost(post: Post): Promise<void>
   deletePost(id: string): Promise<void>
+  saveMagazine(magazine: Magazine): Promise<void>
+  deleteMagazine(id: string): Promise<void>
+  saveSubmission(submission: Submission): Promise<void>
+  deleteSubmission(id: string): Promise<void>
   /** Dopisuje dane z kopii zapasowej; błąd rzuca dalej, żeby pokazać go przy przywracaniu. */
   restore(data: Data): Promise<void>
 }
@@ -127,6 +135,10 @@ export function DataProvider({ store, children }: { store: DataStore; children: 
       deleteTask: (id) => mutate((d) => withoutTask(d, id), () => store.deleteTask(id)),
       savePost: (p) => mutate((d) => withPost(d, p), () => store.savePost(p)),
       deletePost: (id) => mutate((d) => withoutPost(d, id), () => store.deletePost(id)),
+      saveMagazine: (m) => mutate((d) => withMagazine(d, m), () => store.saveMagazine(m)),
+      deleteMagazine: (id) => mutate((d) => withoutMagazine(d, id), () => store.deleteMagazine(id)),
+      saveSubmission: (s) => mutate((d) => withSubmission(d, s), () => store.saveSubmission(s)),
+      deleteSubmission: (id) => mutate((d) => withoutSubmission(d, id), () => store.deleteSubmission(id)),
       restore: async (incoming) => {
         if (store.needsNetwork && !navigator.onLine) throw new Error('Brak połączenia — przywracanie wymaga internetu.')
         try {

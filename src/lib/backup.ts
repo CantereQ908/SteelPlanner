@@ -1,12 +1,16 @@
 import {
+  MAGAZINE_CATEGORIES,
   POST_FORMATS,
   POST_STATUSES,
   ROLES,
   STATUSES,
+  SUBMISSION_STATUSES,
   type Data,
+  type Magazine,
   type Person,
   type Post,
   type Session,
+  type Submission,
   type Task,
 } from '../types'
 
@@ -104,10 +108,32 @@ export function parseBackup(text: string): Data {
     notes: str(p.notes),
   }))
 
-  return { people, sessions, tasks, posts }
+  const magazines: Magazine[] = list(raw.magazines, 'magazines').map((m) => ({
+    id: m.id as string,
+    name: str(m.name),
+    category: oneOf(m.category, MAGAZINE_CATEGORIES, 'unpublished'),
+    url: str(m.url),
+    email: str(m.email),
+    instagram: str(m.instagram),
+    notes: str(m.notes),
+  }))
+  const magazineIds = new Set(magazines.map((m) => m.id))
+
+  const submissions: Submission[] = list(raw.submissions, 'submissions')
+    .filter((s) => magazineIds.has(s.magazineId as string) && sessionIds.has(s.sessionId as string))
+    .map((s) => ({
+      id: s.id as string,
+      magazineId: s.magazineId as string,
+      sessionId: s.sessionId as string,
+      status: oneOf(s.status, SUBMISSION_STATUSES, 'sent'),
+      sentDate: /^\d{4}-\d{2}-\d{2}$/.test(str(s.sentDate)) ? str(s.sentDate) : new Date().toLocaleDateString('sv-SE'),
+      notes: str(s.notes),
+    }))
+
+  return { people, sessions, tasks, posts, magazines, submissions }
 }
 
-/** Np. „3 sesje · 12 osób · 8 zadań · 2 posty". */
+/** Np. „3 sesje · 12 osób · 8 zadań · 2 posty · 5 magazynów · 4 zgłoszenia". */
 export function summarize(data: Data): string {
   const plural = (n: number, one: string, few: string, many: string) => {
     const last = n % 10
@@ -120,5 +146,7 @@ export function summarize(data: Data): string {
     plural(data.people.length, 'osoba', 'osoby', 'osób'),
     plural(data.tasks.length, 'zadanie', 'zadania', 'zadań'),
     plural(data.posts.length, 'post', 'posty', 'postów'),
+    plural(data.magazines.length, 'magazyn', 'magazyny', 'magazynów'),
+    plural(data.submissions.length, 'zgłoszenie', 'zgłoszenia', 'zgłoszeń'),
   ].join(' · ')
 }
