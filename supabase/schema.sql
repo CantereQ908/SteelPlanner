@@ -106,5 +106,17 @@ create policy "own magazines" on public.magazines for all to authenticated
 create policy "own submissions" on public.submissions for all to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
+-- Dostęp przez API. Od 30.10.2026 Supabase nie nadaje go nowym tabelom automatycznie.
+-- Zalogowani: pełny dostęp (i tak tylko do własnych wierszy dzięki RLS).
+grant select, insert, update, delete
+  on public.people, public.sessions, public.session_people, public.tasks, public.posts, public.magazines, public.submissions
+  to authenticated;
+grant select, insert, update, delete
+  on public.people, public.sessions, public.session_people, public.tasks, public.posts, public.magazines, public.submissions
+  to service_role;
+-- Niezalogowani: tylko odczyt sesji dla automatu podtrzymującego (.github/workflows/keepalive.yml).
+-- RLS nie ma reguł dla anon, więc zapytanie zwraca pustą listę.
+grant select on public.sessions to anon;
+
 -- Zmiany na żywo między urządzeniami.
 alter publication supabase_realtime add table public.people, public.sessions, public.session_people, public.tasks, public.posts, public.magazines, public.submissions;

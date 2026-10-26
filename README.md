@@ -36,6 +36,8 @@ Jeśli baza powstała przed którąś z późniejszych zmian, uruchom w SQL Edit
 - [supabase/migrations-2026-10-06-task-due.sql](supabase/migrations-2026-10-06-task-due.sql) — terminy zadań
 - [supabase/migrations-2026-10-26-magazines.sql](supabase/migrations-2026-10-26-magazines.sql) — magazyny i zgłoszenia sesji
 
+Od 30.10.2026 Supabase nie daje nowym tabelom dostępu przez API automatycznie. [schema.sql](supabase/schema.sql) ma już potrzebne `grant`. Każda migracja tworząca nową tabelę też musi je zawierać (`select, insert, update, delete` dla `authenticated` i `service_role`), inaczej aplikacja dostanie błąd „permission denied".
+
 Dane z trybu lokalnego nie przenoszą się automatycznie do chmury.
 
 Bez internetu aplikacja się otwiera i pokazuje ostatnio pobrane dane; zmiany wymagają połączenia.
